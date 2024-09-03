@@ -1,5 +1,5 @@
-import { cartModel } from "../../models/cartModel";
-import productModel from "../../models/productModel";
+import { cartModel, ICartItem } from "../../models/cartModel";
+import productModel, { IProduct } from "../../models/productModel";
 
 interface CreateCartForUser {
   userId: string;
@@ -49,7 +49,7 @@ export const addItemToCart = async ({
     (item) => item.product.toString() === productId
   );
   if (itemExistsInCart) {
-    if (product.stock < itemExistsInCart.quantity + quantity) {
+    if (product.stock < quantity) {
       return { statusCode: 400, data: `Product stock is ${product.stock}` };
     }
     itemExistsInCart.quantity += quantity;
@@ -65,6 +65,44 @@ export const addItemToCart = async ({
   cart.items.push({ product: productId, unitPrice: product.price, quantity });
   cart.total += product.price * quantity;
   product.stock -= quantity;
+  await product.save();
+  const updatedCart = await cart.save();
+  return { statusCode: 200, data: updatedCart };
+};
+
+interface UpdateItemInCart {
+  userId: string;
+  productId: string;
+  quantity: number;
+}
+
+export const updateItemInCart = async ({
+  userId,
+  productId,
+  quantity,
+}: UpdateItemInCart) => {
+  const cart = await getActiveCartForUser({ userId });
+  const product = await productModel.findById(productId);
+  if (!product) {
+    return { statusCode: 400, data: "Product not found" };
+  }
+  const itemExistsInCart = cart.items.find(
+    (item) => item.product.toString() === productId
+  );
+  if (!itemExistsInCart) {
+    return { statusCode: 400, data: "Item not found in cart" };
+  }
+  console.log(product.stock, itemExistsInCart.quantity, quantity);
+  if (product.stock + itemExistsInCart.quantity - quantity < 0) {
+    return { statusCode: 400, data: `Product stock is ${product.stock}` };
+  }
+  if (quantity < 0) {
+    return { statusCode: 400, data: "Quantity must be greater than zero" };
+  }
+  cart.total -= itemExistsInCart.unitPrice * itemExistsInCart.quantity;
+  cart.total += itemExistsInCart.unitPrice * quantity;
+  product.stock += itemExistsInCart.quantity - quantity;
+  itemExistsInCart.quantity = quantity;
   await product.save();
   const updatedCart = await cart.save();
   return { statusCode: 200, data: updatedCart };
