@@ -1,6 +1,8 @@
 import express from "express";
 import {
   addItemToCart,
+  clearCart,
+  deleteItemFromCart,
   getActiveCartForUser,
   updateItemInCart,
 } from "../services/cart/cartService";
@@ -38,6 +40,33 @@ cartRouter.put("/items", validateJWT, async (req: ExtendRequest, res) => {
     console.log(err);
     res.status(500).send("Internal Server Error");
   }
-})
+});
+
+cartRouter.delete(
+  "/items/:productId",
+  validateJWT,
+  async (req: ExtendRequest, res) => {
+    try {
+      const userId = req.user._id;
+      const { productId } = req.params;
+      const response = await deleteItemFromCart({ userId, productId });
+      res.status(response.statusCode).send(response.data);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal Server Error");
+    }
+  }
+);
+
+cartRouter.delete("/", validateJWT, async (req: ExtendRequest, res) => {
+  try {
+    const userId = req.user._id;
+    const response = await clearCart({ userId });
+    res.status(response.statusCode).send(response.data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 export default cartRouter;

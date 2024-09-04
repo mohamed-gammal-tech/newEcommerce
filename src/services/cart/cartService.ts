@@ -107,3 +107,54 @@ export const updateItemInCart = async ({
   const updatedCart = await cart.save();
   return { statusCode: 200, data: updatedCart };
 };
+
+interface deleteItemFromCart {
+  userId: string;
+  productId: string;
+}
+
+export const deleteItemFromCart = async ({
+  userId,
+  productId,
+}: deleteItemFromCart) => {
+  const cart = await getActiveCartForUser({ userId });
+  const product = await productModel.findById(productId);
+  if (!product) {
+    return { statusCode: 400, data: "Product not found" };
+  }
+  const itemExistsInCart = cart.items.find(
+    (item) => item.product.toString() === productId
+  );
+  if (!itemExistsInCart) {
+    return { statusCode: 400, data: "Item not found in cart" };
+  }
+  product.stock += itemExistsInCart.quantity;
+  cart.total -= itemExistsInCart.unitPrice * itemExistsInCart.quantity;
+  const otherCartItems = cart.items.filter(
+    (item) => item.product.toString() !== productId
+  );
+  cart.items = otherCartItems;
+  await product.save();
+  const updatedCart = await cart.save();
+  return { statusCode: 200, data: updatedCart };
+};
+
+interface ClearCart {
+  userId: string;
+}
+
+export const clearCart = async ({ userId }: ClearCart) => {
+  const cart = await getActiveCartForUser({ userId });
+  cart.items.forEach(async (item) => {
+    const product = await productModel.findById(item.product);
+    if (!product) {
+      return { statusCode: 400, data: "Product not found" };
+    }
+    product.stock += item.quantity;
+    await product.save();
+  });
+  cart.items = [];
+  cart.total = 0;
+  const updatedCart = await cart.save();
+  return { statusCode: 200, data: updatedCart };
+};
