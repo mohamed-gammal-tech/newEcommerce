@@ -168,6 +168,9 @@ interface Checkout {
 export const checkout = async ({ userId, address }: Checkout) => {
   const cart = await getActiveCartForUser({ userId });
   const orderItems: IOrderItem[] = [];
+
+  // This code will not work as expected because of the async nature of the forEach loop
+
   // cart.items.forEach(async (item) => {
   //   const product = await productModel.findById(item.product);
   //   if (!product) {

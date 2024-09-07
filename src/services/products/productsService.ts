@@ -26,7 +26,6 @@ export const seedIntialProducts = async () => {
       await productModel.insertMany(products);
     }
   } catch (err) {
-    console.log(err);
-    // res.status(500).send("Internal Server Error");
+    console.log("cannot seed from database ", err);
   }
 };
