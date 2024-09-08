@@ -18,6 +18,20 @@ export const seedIntialProducts = async () => {
         price: 50000,
         stock: 10,
       },
+      {
+        title: "Asus laptop",
+        description: "an amazing laptop",
+        image: "https://i.ytimg.com/vi/eMJ9mDSSOh0/sddefault.jpg",
+        price: 20000,
+        stock: 10,
+      },
+      {
+        title: "MSI laptop",
+        description: "an amazing laptop",
+        image: "https://i.ytimg.com/vi/eMJ9mDSSOh0/sddefault.jpg",
+        price: 10000,
+        stock: 10,
+      },
     ];
 
     const existingProducts = await getAllProducts();

@@ -6,11 +6,13 @@ import userRouter from "./routes/userRoute";
 import { seedIntialProducts } from "./services/products/productsService";
 import productRouter from "./routes/productRoute";
 import cartRouter from "./routes/cartRoute";
+import cors from "cors";
 const app = express();
 const PORT = 3000;
 // Load environment variables from the .env file
 dotenv.config();
 
+app.use(cors());
 app.use(express.json());
 app.use("/user", userRouter);
 app.use("/product", productRouter);
