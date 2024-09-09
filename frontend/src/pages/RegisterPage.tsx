@@ -1,6 +1,7 @@
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { useRef, useState } from "react";
 import { BASE_URL } from "../constants/baseUrl";
+import { useAuth } from "../context/Auth/AuthContext";
 
 const RegisterPage = () => {
   const [error, setError] = useState<string>("");
@@ -8,12 +9,20 @@ const RegisterPage = () => {
   const lastNameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+
+  const { login } = useAuth();
+
   const onSubmit = async () => {
     const firstName = firstNameRef.current?.value;
     const lastName = lastNameRef.current?.value;
     const email = emailRef.current?.value;
     const password = passwordRef.current?.value;
     console.log({ firstName, lastName, email, password });
+    //validation  check if all fields are filled
+    if (!firstName || !lastName || !email || !password) {
+      setError("Please fill all the fields");
+      return;
+    }
     const response = await fetch(`${BASE_URL}/user/register`, {
       method: "POST",
       headers: {
@@ -27,8 +36,13 @@ const RegisterPage = () => {
       return;
     }
 
-    const data = await response.json();
-    console.log(data);
+    const token = await response.json();
+    if (!token) {
+      setError("token issue");
+      return;
+    }
+    login(email, token);
+    console.log(token);
   };
 
   return (
